@@ -1,133 +1,184 @@
-:root{
-  --bg-1: #0f0424;
-  --bg-2: #190437;
-  --card: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-  --accent-1: #8a2be2;
-  --accent-2: #b57cf6;
-  --glass: rgba(255,255,255,0.04);
-  --muted: rgba(255,255,255,0.6);
-  --glass-border: rgba(255,255,255,0.06);
-  --radius: 14px;
-  --shadow-1: 0 6px 20px rgba(11,3,34,0.6);
-  --glass-shadow: 0 8px 30px rgba(15,4,36,0.65);
-  color-scheme: dark;
+// SimplifAI-1 Lesson 1 JS (separate file)
+// Advanced UI/UX interactions
+
+const lessons = [
+  { id:1, title:'Lesson 1 — Living Button', summary:'Interactive button: HTML/CSS/JS basics', completed:false },
+  { id:2, title:'Lesson 2 — Layouts & Flexbox', summary:'Responsive layout foundations', completed:false },
+  { id:3, title:'Lesson 3 — State & Events', summary:'Managing UI state with JS', completed:false },
+  { id:4, title:'Lesson 4 — Accessible Patterns', summary:'ARIA, keyboard, screen readers', completed:false },
+  { id:5, title:'Lesson 5 — Animations', summary:'Motion design and performance', completed:false },
+  { id:6, title:'Lesson 6 — Forms', summary:'Validation and UX', completed:false },
+  { id:7, title:'Lesson 7 — Build project', summary:'Small project to consolidate skills', completed:false },
+  { id:8, title:'Lesson 8 — Review & Next Steps', summary:'Certificate & resources', completed:false }
+];
+
+// Starter code: simple living button
+const starterCode = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+      :root{ --accent:linear-gradient(90deg,#8a2be2,#b57cf6); }
+      body{display:grid;place-items:center;height:100vh;margin:0;background:#12031a;font-family:system-ui,Segoe UI,Roboto,Arial;color:#fff}
+      .btn{background:var(--accent);border:none;padding:14px 18px;border-radius:12px;color:white;font-weight:700;font-size:16px;cursor:pointer;transition:transform .18s cubic-bezier(.2,.9,.2,1),box-shadow .18s ease}
+      .btn:focus{outline:3px solid rgba(181,124,246,0.18);outline-offset:6px}
+      .btn:hover{transform:translateY(-6px) rotate(-1deg);box-shadow:0 18px 40px rgba(138,43,226,0.18)}
+    </style>
+  </head>
+  <body>
+    <button class="btn" aria-pressed="false" id="liveBtn">Click me — I'm alive</button>
+
+    <script>
+      const btn = document.getElementById('liveBtn');
+      btn.addEventListener('click', ()=>{
+        const pressed = btn.getAttribute('aria-pressed') === 'true';
+        btn.setAttribute('aria-pressed', String(!pressed));
+        btn.textContent = !pressed ? 'Thanks! — Press again' : "Click me — I'm alive";
+      });
+    </script>
+  </body>
+</html>`;
+
+// Elements
+const lessonsList = document.getElementById('lessonsList');
+const progressFill = document.getElementById('progressFill');
+const progressText = document.getElementById('progressText');
+const statusText = document.getElementById('statusText');
+const codeEditor = document.getElementById('codeEditor');
+const previewFrame = document.getElementById('previewFrame');
+const runBtn = document.getElementById('runBtn');
+const copyStarter = document.getElementById('copyStarter');
+const markComplete = document.getElementById('markComplete');
+const nextLessonBtn = document.getElementById('nextLesson');
+const resetProgress = document.getElementById('resetProgress');
+const downloadBtn = document.getElementById('downloadBtn');
+const autosaveState = document.getElementById('autosaveState');
+const vpSize = document.getElementById('vpSize');
+
+// Load or initialize progress
+const STORAGE_KEY = 'simplifai1_progress_v1';
+const CODE_KEY = 'simplifai1_code_lesson1';
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(raw){
+    try{const parsed=JSON.parse(raw);parsed.forEach((p,i)=>lessons[i].completed = !!p);}
+    catch(e){}
+  }
+  const code = localStorage.getItem(CODE_KEY);
+  codeEditor.value = code || starterCode;
 }
 
-*{box-sizing: border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-  background: radial-gradient(1200px 600px at 10% 10%, rgba(139,0,255,0.14), transparent 6%),
-              radial-gradient(900px 500px at 90% 90%, rgba(66,0,121,0.12), transparent 6%),
-              linear-gradient(180deg, var(--bg-1), var(--bg-2));
-  color: #fff;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
-  padding:28px;
+function saveProgress(){
+  const arr = lessons.map(l=>l.completed);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+  updateUI();
 }
 
-/* App frame */
-.app{
-  max-width:1200px;
-  margin:0 auto;
-  min-height:calc(100vh - 56px);
-  display:grid;
-  grid-template-columns: 320px 1fr;
-  gap:20px;
-  align-items:start;
+function updateUI(){
+  lessonsList.innerHTML = '';
+  lessons.forEach((l,idx)=>{
+    const el = document.createElement('div');
+    el.className='lesson'+(l.completed? ' active':'');
+    el.tabIndex = 0;
+    el.innerHTML = `<div><h3>${l.title}</h3><div class="meta">${l.summary}</div></div><div class="meta">${l.completed? '✓':'○'}</div>`;
+    el.addEventListener('click', ()=>selectLesson(idx));
+    el.addEventListener('keydown', (e)=>{ if(e.key==='Enter') selectLesson(idx) });
+    lessonsList.appendChild(el);
+  });
+
+  const completedCount = lessons.filter(l=>l.completed).length;
+  const pct = Math.round((completedCount/lessons.length)*100);
+  progressFill.style.width = pct + '%';
+  progressText.textContent = `${pct}% complete — ${completedCount} / ${lessons.length} lessons`;
+  statusText.textContent = completedCount === lessons.length ? 'Completed' : 'Learning';
 }
 
-/* Sidebar */
-.sidebar{
-  background: var(--card);
-  border-radius:calc(var(--radius) - 4px);
-  padding:18px;
-  border:1px solid var(--glass-border);
-  box-shadow:var(--glass-shadow);
-  backdrop-filter: blur(8px) saturate(120%);
-  display:flex;flex-direction:column;gap:16px;
-  min-height:520px;
+function selectLesson(index){
+  const chosen = lessons[index];
+  document.getElementById('lessonTitle').textContent = chosen.title;
+  document.querySelectorAll('#taskList input[type=checkbox]').forEach((cb,i)=>cb.checked = !!(chosen.completed && i<3));
+  if(chosen.id===1) codeEditor.value = localStorage.getItem(CODE_KEY) || starterCode;
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-.brand{display:flex;gap:12px;align-items:center;}
-.logo{width:46px;height:46px;border-radius:10px;
-  background:linear-gradient(135deg,var(--accent-1),var(--accent-2));
-  display:grid;place-items:center;font-weight:800;font-size:18px;color:white;box-shadow:0 6px 18px rgba(133,60,255,0.25);
-}
-.brand h1{font-size:15px;margin:0}
-.brand p{margin:0;font-size:12px;color:var(--muted)}
-
-.progress-wrap{display:flex;flex-direction:column;gap:8px}
-.progress-bar{
-  height:10px;background:linear-gradient(90deg, rgba(255,255,255,0.05), rgba(255,255,255,0.02));
-  border-radius:999px;overflow:hidden;border:1px solid rgba(255,255,255,0.02)
-}
-.progress-bar > i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));transition:width .45s cubic-bezier(.2,.9,.2,1)}
-
-.lessons{display:flex;flex-direction:column;gap:8px}
-.lesson{
-  padding:10px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;
-  background:transparent;border:1px solid transparent;cursor:pointer;transition:all .18s ease;
-}
-.lesson:hover{transform:translateY(-3px);box-shadow:var(--shadow-1);border-color:rgba(255,255,255,0.03)}
-.lesson.active{background:linear-gradient(120deg, rgba(138,43,226,0.12), rgba(181,124,246,0.06));border-color:rgba(181,124,246,0.12)}
-.lesson h3{margin:0;font-size:13px}
-.lesson .meta{font-size:12px;color:var(--muted)}
-
-.cta{display:flex;gap:8px}
-.btn{
-  padding:10px 14px;border-radius:12px;border:0;cursor:pointer;font-weight:600;letter-spacing:.2px;transition:transform .12s ease, box-shadow .12s ease;box-shadow:0 6px 20px rgba(11,3,34,0.45);
-}
-.btn-primary{background:linear-gradient(90deg,var(--accent-1),var(--accent-2));color:white}
-.btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
-.btn:active{transform:translateY(1px)}
-
-/* Main content */
-.main{
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border-radius:calc(var(--radius));padding:18px;border:1px solid var(--glass-border);box-shadow:var(--glass-shadow);
-  min-height:520px;display:flex;flex-direction:column;gap:16px;
+function runPreview(){
+  const code = codeEditor.value;
+  try{
+    previewFrame.srcdoc = code;
+  }catch(e){
+    previewFrame.contentWindow.document.open();
+    previewFrame.contentWindow.document.write(code);
+    previewFrame.contentWindow.document.close();
+  }
 }
 
-.hero{display:flex;justify-content:space-between;align-items:center;gap:12px}
-.hero h2{margin:0;font-size:18px}
-.hero p{margin:0;color:var(--muted);font-size:13px}
-
-.stage{display:grid;grid-template-columns: 1fr 420px;gap:16px;align-items:start;}
-
-.lesson-card{background:transparent;padding:14px;border-radius:12px;border:1px dashed rgba(255,255,255,0.02);min-height:280px}
-.lesson-card h3{margin-top:0}
-.task-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
-.task{display:flex;gap:10px;align-items:center}
-.task input[type=checkbox]{width:18px;height:18px;border-radius:4px;background:transparent;border:1px solid rgba(255,255,255,0.06)}
-
-/* Editor area */
-.editor-wrap{display:flex;flex-direction:column;gap:10px}
-.editor-controls{display:flex;gap:8px;align-items:center;justify-content:space-between}
-.editor-controls .left{display:flex;gap:8px;align-items:center}
-.editor-controls .muted{color:var(--muted);font-size:13px}
-
-.split{display:grid;grid-template-columns:1fr 1fr;gap:10px;height:320px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.02)}
-
-textarea.code{
-  width:100%;height:100%;resize:none;padding:14px;background:linear-gradient(180deg, rgba(10,4,20,0.3), rgba(0,0,0,0.22));border:none;color:#eae6ff;font-family:ui-monospace, SFMono-Regular, Menlo, monospace;font-size:13px;outline:none;line-height:1.5;
+let autosaveTimer = null;
+function scheduleAutosave(){
+  if(autosaveTimer) clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(()=>{ localStorage.setItem(CODE_KEY, codeEditor.value); document.getElementById('autosaveState').textContent='Saved'; setTimeout(()=>document.getElementById('autosaveState').textContent='On',800); }, 650);
 }
 
-.preview{background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));border-left:1px solid rgba(255,255,255,0.02);display:flex;flex-direction:column;gap:8px;overflow:hidden}
-.preview iframe{flex:1;border:0;width:100%;height:100%}
-
-.small{font-size:12px;color:var(--muted)}
-
-/* Responsive */
-@media (max-width:1000px){
-  .app{grid-template-columns:1fr;}
-  .stage{grid-template-columns:1fr;}
-  .split{height:260px}
+function markLessonComplete(){
+  lessons[0].completed = true;
+  saveProgress();
+  tinyConfetti();
 }
 
-/* Tiny micro interactions */
-.sparkle{position:relative}
-.sparkle::after{content:"";position:absolute;right:-6px;top:-6px;width:8px;height:8px;border-radius:50%;background:linear-gradient(90deg,#fff,#ffd6ff);box-shadow:0 6px 18px rgba(133,60,255,0.18);opacity:.9}
+function tinyConfetti(){
+  for(let i=0;i<12;i++){
+    const d = document.createElement('div');
+    d.style.position='fixed';d.style.width='9px';d.style.height='9px';d.style.borderRadius='3px';
+    d.style.left=(50 + (Math.random()*40-20))+'%';d.style.top=(40 + Math.random()*20-10)+'%';
+    const c = ['#b57cf6','#8a2be2','#ffd6ff','#e6b8ff'][Math.floor(Math.random()*4)];
+    d.style.background=c;d.style.opacity='0.95';d.style.pointerEvents='none';d.style.transform='translateY(0)';
+    d.style.transition='transform 1200ms cubic-bezier(.2,.9,.2,1),opacity 900ms';
+    document.body.appendChild(d);
+    setTimeout(()=>{d.style.transform='translateY(180px) rotate('+ (Math.random()*360) +'deg)';d.style.opacity='0'},20);
+    setTimeout(()=>document.body.removeChild(d),1500);
+  }
+}
 
-.hint{padding:8px 12px;border-radius:10px;background:linear-gradient(90deg, rgba(138,43,226,0.12), rgba(181,124,246,0.06));font-size:13px;color:var(--muted)}
+copyStarter.addEventListener('click', ()=>{ codeEditor.value = starterCode; localStorage.setItem(CODE_KEY, starterCode); runPreview(); });
+
+runBtn.addEventListener('click', ()=>{ runPreview(); document.querySelector('[data-task="4"]').checked = true; scheduleAutosave(); });
+
+window.addEventListener('keydown', (e)=>{ if((e.ctrlKey || e.metaKey) && e.key.toLowerCase()==='enter'){ e.preventDefault(); runPreview(); } });
+
+downloadBtn.addEventListener('click', ()=>{
+  const blob = new Blob([codeEditor.value], {type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download = 'simplifai_lesson1.html'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+
+markComplete.addEventListener('click', ()=>{ markLessonComplete(); });
+
+nextLessonBtn.addEventListener('click', ()=>{
+  const idx = lessons.findIndex(l=>!l.completed);
+  if(idx>-1){ lessons[idx].completed = true; saveProgress(); }
+  else alert('You finished all lessons. Great job!');
+});
+
+resetProgress.addEventListener('click', ()=>{ if(confirm('Reset all progress?')){ lessons.forEach(l=>l.completed=false); saveProgress(); } });
+
+document.querySelectorAll('#taskList input[type=checkbox]').forEach(cb=>{
+  cb.addEventListener('change', ()=>{
+    const all = Array.from(document.querySelectorAll('#taskList input[type=checkbox]')).every(c=>c.checked);
+    if(all){ lessons[0].completed = true; saveProgress(); }
+  });
+});
+
+codeEditor.addEventListener('input', ()=>{ scheduleAutosave(); });
+
+function updateVP(){ vpSize.textContent = Math.round(previewFrame.clientWidth) + 'px × ' + Math.round(previewFrame.clientHeight) + 'px'; }
+const ro = new ResizeObserver(updateVP); ro.observe(previewFrame);
+
+loadState(); updateUI(); selectLesson(0); runPreview();
+
+window.addEventListener('keydown', (e)=>{ if(e.key.toLowerCase()==='e' && !['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){ e.preventDefault(); codeEditor.focus(); } });
+
+function trackRun(){ localStorage.setItem('simplifai1_lastRun', Date.now()); }
+runBtn.addEventListener('click', trackRun);
+
+scheduleAutosave();
