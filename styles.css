@@ -1,0 +1,93 @@
+/* General Styles */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #1e002e;
+  color: #fff;
+}
+
+/* Header */
+header {
+  background: linear-gradient(90deg, #5a0fc8, #8e2de2);
+  padding: 2rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+header h1 {
+  font-size: 2.5rem;
+  margin: 0;
+}
+header .subtitle {
+  font-size: 1.2rem;
+  opacity: 0.9;
+}
+
+/* Main Content */
+main {
+  padding: 2rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+/* Lesson Section */
+.lesson {
+  background: #2b0040;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Editor Section */
+.editor {
+  background: #2b0040;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+textarea {
+  width: 100%;
+  height: 120px;
+  font-family: monospace;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: none;
+  background: #3b005f;
+  color: #fff;
+  outline: none;
+}
+button {
+  margin-top: 1rem;
+  background: #8e2de2;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 10px;
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+button:hover {
+  background: #a54be7;
+}
+#output {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: #1a0026;
+  border-radius: 10px;
+  min-height: 50px;
+  font-family: monospace;
+  white-space: pre-wrap;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: #150021;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
